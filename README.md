@@ -37,10 +37,10 @@ You can run the socks5 sever by following command:
 
 Notes:
 
-1 - This is just a PoC at this point and I am planning to merge these two elements into one executable and run it as systemd service. Please also make sure you that you open port 443 on your server with `ufw` and set your server firewall properly.
+1. This is just a PoC at this point and I am planning to merge these two elements into one executable and run it as systemd service. Please also make sure you that you open port 443 on your server with `ufw` and set your server firewall properly.
 
 
-2 - You can add packet splits and TLS fragmentation to the dialer make fingerprinting based on packet sizes more difficult:
+2. You can add packet splits and TLS fragmentation to the dialer make fingerprinting based on packet sizes more difficult:
 
 ```
 split:1|tlsfrag:1|tls:sni=open.com|socks5://user:pass@serverdomain.com:443|plit:1
