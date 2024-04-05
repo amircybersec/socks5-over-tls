@@ -19,19 +19,31 @@ For the client, you can use fyne-proxy example, or Blazer proxy if you need a GU
 The server side basicallt has two elements: 
 1. A TLS/SSL server
 This server sits at the front and listens on the port `443` for incoming connections. It performs TLS handshake with the client and decypts the traffic. It then passes the traffic to the local SOCK5 server. 
-2. SOCKS5 server
-The SOCKS5 server sits behind the TLS server and handles the SOCKS5 connection. It performs 
 
-In the current PoC, I use `socat` as TLS server to perform SSL handshake and passed the traffic to a local `socks5` server (running on port 8000 in this example) after decrypting it. I used `certbot` to create a CA-signed certificate. 
+2. SOCKS5 server
+The SOCKS5 server sits behind the TLS server and handles the SOCKS5 connection.
+
+In the current PoC, I use `socat` as TLS server to perform SSL handshake and passed the traffic to a local `socks5` server (running on port 8080 in this example) after decrypting it. I used `certbot` to create a CA-signed certificate.
 
 ```
 socat -dd openssl-listen:443,reuseaddr,cert=fullchain.pem,key=privkey.pem,verify=0,fork tcp-connect:localhost:8080
 ```
 
+You can run the socks5 sever on command line:
 
-The packet splits and TLS fragmentation makes fingerprinting based on packet sizes more difficult.
+```
+./main foo bar 127.0.0.1 8080
+```
+
+Notes:
+
+1 - This is just a PoC at this point and I am planning to merge these two elements into one executable and run it as systemd service. Please also make sure you that you open port 443 on your server with `ufw` and set your server firewall properly.
 
 
+2 - You can add packet splits and TLS fragmentation to the dialer make fingerprinting based on packet sizes more difficult:
 
+```
+split:1|tlsfrag:1|tls:sni=open.com|socks5://user:pass@serverdomain.com:443|plit:1
+```
 
 
