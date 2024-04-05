@@ -6,13 +6,13 @@ socks5-over-tls transport is a wrapped transport where the outer transport is TL
 
 ## Client
 
-For the client side, I use Outline SDK configurable dialers to build a custom config like this:
+For the client side, I use [Outline SDK](https://github.com/Jigsaw-Code/outline-sdk) configurable dialers to build a custom config like this:
 
 ```tls:sni=open.com|socks5://user:pass@serverdomain.com:443```
 
 where `open.com` is the domain that can be used to bypass SNI based filtering. The `serverdomain.com` is the target server domain name. In the current implementation you need a valid CA-signed certitcate for your domain. `user:pass` are your socks5 server credentials. 
 
-For the client, you can use fyne-proxy example, or Blazer proxy if you need a GUI based client. Both clients run on `windows`, `macOS`, and `linux`. I will update this doc as more clients become available. 
+For the client, you can use [fyne-proxy example](https://github.com/Jigsaw-Code/outline-sdk/tree/main/x/examples/fyne-proxy), or [Blazer proxy](https://github.com/amircybersec/FyneProxy) if you need a GUI based client. Both clients run on `windows`, `macOS`, and `linux`. I will update this doc as more clients become available. 
 
 ## Server
 
@@ -29,7 +29,7 @@ In the current PoC, I use `socat` as TLS server to perform SSL handshake and pas
 socat -dd openssl-listen:443,reuseaddr,cert=fullchain.pem,key=privkey.pem,verify=0,fork tcp-connect:localhost:8080
 ```
 
-You can run the socks5 sever on command line:
+You can run the socks5 sever by following command:
 
 ```
 ./main foo bar 127.0.0.1 8080
