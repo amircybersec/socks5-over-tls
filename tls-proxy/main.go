@@ -15,6 +15,7 @@ func main() {
 	targetAddr := flag.String("target", "localhost:8080", "Target server address")
 	flag.Parse()
 
+	// TODO: automate certificate generation using the autocert package
 	/*
 	   if *domain == "" {
 	       log.Fatal("Please provide a domain using the -domain flag")
@@ -25,19 +26,22 @@ func main() {
 	log.SetOutput(os.Stderr)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
 
-	//autocert.DefaultACME.Log = log.New(os.Stderr, "", log.LstdFlags|log.Lshortfile)
 	/*
-	   certManager := &autocert.Manager{
-	       Prompt:     autocert.AcceptTOS,
-	       HostPolicy: autocert.HostWhitelist(*domain),
-	       Cache:      autocert.DirCache("/root/tls-proxy/certs"), // Directory to store certificates
-	   }
-	   log.Printf("certmanager is %v", certManager)
+		manager := &autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(*domain),
+			Cache:      autocert.DirCache("certs"),
+		}
+		manager.Client = &acme.Client{
+			DirectoryURL: autocert.DefaultACMEDirectory,
+			UserAgent:    "Your-User-Agent",
+			Logger:       log.New(os.Stderr, "autocert: ", log.LstdFlags),
+		}
 
-	   // TLS server configuration
-	    tlsConfig := &tls.Config{
-	       GetCertificate: certManager.GetCertificate,
-	   }
+		// TLS server configuration
+		tlsConfig := &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+		}
 	*/
 
 	certFile := "fullchain.pem"
@@ -52,8 +56,6 @@ func main() {
 		Certificates: []tls.Certificate{cert},
 		ClientAuth:   tls.NoClientCert,
 	}
-
-	//tlsConfig := certManager.TLSConfig()
 
 	// Listen for incoming TLS connections
 	listener, err := tls.Listen("tcp", ":443", tlsConfig)
