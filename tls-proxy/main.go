@@ -7,20 +7,22 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/user"
+	"path/filepath"
+
+	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
 	// Parse command-line flags
-	//domain := flag.String("domain", "", "Domain for which to generate a certificate")
+	domain := flag.String("domain", "", "Domain for which to generate a certificate")
 	targetAddr := flag.String("target", "localhost:8080", "Target server address")
 	flag.Parse()
 
 	// TODO: automate certificate generation using the autocert package
-	/*
-	   if *domain == "" {
-	       log.Fatal("Please provide a domain using the -domain flag")
-	   }
-	*/
+	if *domain == "" {
+		log.Fatal("Please provide a domain using the -domain flag")
+	}
 
 	// Enable verbose logging for the autocert package
 	log.SetOutput(os.Stderr)
@@ -44,17 +46,33 @@ func main() {
 		}
 	*/
 
-	certFile := "fullchain.pem"
-	keyFile := "privkey.pem"
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-
-	if err != nil {
-		log.Fatalf("Failed to load certificate and key: %v", err)
+	certManager := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist(*domain),
 	}
 
+	// optionally use a cache dir
+	dir := cacheDir()
+	if dir != "" {
+		certManager.Cache = autocert.DirCache(dir)
+	}
+
+	// certFile := "fullchain.pem"
+	// keyFile := "privkey.pem"
+	// cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	// if err != nil {
+	// 	log.Fatalf("Failed to load certificate and key: %v", err)
+	// }
+
+	// tlsConfig := &tls.Config{
+	// 	Certificates: []tls.Certificate{cert},
+	// 	ClientAuth:   tls.NoClientCert,
+	// }
+
+	// TLS server configuration
 	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		ClientAuth:   tls.NoClientCert,
+		GetCertificate: certManager.GetCertificate,
+		ClientAuth:     tls.NoClientCert,
 	}
 
 	// Listen for incoming TLS connections
@@ -93,4 +111,15 @@ func handleConnection(conn net.Conn, targetAddr string) {
 	// Perform bidirectional data transfer between the client and target server
 	go io.Copy(targetConn, conn)
 	io.Copy(conn, targetConn)
+}
+
+// cacheDir makes a consistent cache directory inside /tmp. Returns "" on error.
+func cacheDir() (dir string) {
+	if u, _ := user.Current(); u != nil {
+		dir = filepath.Join(os.TempDir(), "cache-golang-autocert-"+u.Username)
+		if err := os.MkdirAll(dir, 0700); err == nil {
+			return dir
+		}
+	}
+	return ""
 }
