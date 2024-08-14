@@ -16,7 +16,7 @@ For the client, you can use [fyne-proxy example](https://github.com/Jigsaw-Code/
 
 ## Server
 
-The server side basicallt has two elements: 
+The server side basically has two elements: 
 1. A TLS/SSL server
 This server sits at the front and listens on the port `443` for incoming connections. It performs TLS handshake with the client and decypts the traffic. It then passes the traffic to the local SOCK5 server. 
 
